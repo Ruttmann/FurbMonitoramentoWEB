@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var io = require('socket.io')();
+var socket = require('./libs/socket.js')(io);
 
 //Rota para conexão do Arduino
 var indexRouter = require('./routes/index');
