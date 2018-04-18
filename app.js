@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var io = require('socket.io')();
 
 //Rota para conexão do Arduino
 var indexRouter = require('./routes/index');
@@ -11,6 +12,8 @@ var indexRouter = require('./routes/index');
 var adminRouter = require('./routes/admin');
 
 var app = express();
+
+app.io = io;
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
