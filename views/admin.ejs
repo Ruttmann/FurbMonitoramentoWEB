@@ -8,8 +8,32 @@
     <link rel='stylesheet' href='/stylesheets/style.css'/>
 </head>
 <body>
-    <h1><%= title %></h1>
-    <p>Página de monitoramento dos dispositivos.</p>
+    <header class="bg-dark">
+        <div class="col-100">
+            <h1 class="color-white"><%= title %></h1>
+        </div>
+    </header>
+    <section>
+        <div class="col-30 bg-grey">
+            <form action="/add" method="POST">
+                <legend>Incluir nova tarefa</legend>
+                <input type="text" name="title" placeholder="Título">
+                <textarea name="description" id="" cols="30" rows="10" placeholder="Descrição"></textarea>
+                <button type="submit">+ adicionar</button>
+            </form>
+        </div>
+        <div class="col-70">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>1# <strong>Criar este sistema</strong></td>
+                        <td class="actions"><a href="/turn/1" class="red">not ok</a></td>
+                        <td class="highlight">asddfsdf sdfsdfs dfsdfsdfsdf</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
     <script 
         src="https://code.jquery.com/jquery-3.3.1.min.js"
         integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="

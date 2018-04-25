@@ -4,11 +4,7 @@ module.exports = function(io) {
 
     arduino.on('connection', function(socket) {
         console.log('Arduino connected!');
-
-        socket.on('atime', function (data) {
-            io.sockets.emit('atime', { time: new Date().toJSON() });
-            console.log(data);
-          });
+        
     });
 
     admin.on('connection', function(socket) {
