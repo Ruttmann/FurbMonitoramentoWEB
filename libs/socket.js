@@ -5,9 +5,13 @@ module.exports = function(io) {
     arduino.on('connection', function(socket) {
         var clientID;
         console.log('Arduino connected!');
-        
+
         socket.on('connection', function(data) {
             console.log(data);
+        });
+
+        socket.on('newSignals', function(data) {
+            console.log("Dispositivo ");
         });
         
     });
