@@ -3,7 +3,12 @@ module.exports = function(io) {
     var admin = io.of('/admin');
 
     arduino.on('connection', function(socket) {
+        var clientID;
         console.log('Arduino connected!');
+        
+        socket.on('connection', function(data) {
+            console.log(data);
+        });
         
     });
 
@@ -13,7 +18,8 @@ module.exports = function(io) {
         * socket.nsp.emit => emite para todos os sockets do namespace
         */
         console.log('Admin connected!');
-        socket.emit('sayhi', { msg: 'Hi webclient!'});
-        socket.emit('id', {msg: "Unique id: "+socket.id});
+
+        //socket.emit('sayhi', { msg: 'Hi webclient!'});
+        //socket.emit('id', {msg: "Unique id: "+socket.id});
     });
 }
