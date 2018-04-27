@@ -2,6 +2,8 @@ module.exports = function(io) {
     var arduino = io.of('/arduino');
     var admin = io.of('/admin');
 
+    var dado;
+
     arduino.on('connection', function(socket) {
         var clientID;
         console.log('Arduino connected!');
@@ -10,8 +12,16 @@ module.exports = function(io) {
             console.log(data);
         });
 
-        socket.on('newSignals', function(data) {
-            console.log("Dispositivo ");
+        socket.on('newSignal', function(data) {
+            console.log(data);
+            dado = data;
+        });
+
+        socket.on('haha', function(data) {
+            console.log(data);
+            console.log(typeof dado);
+            socket.emit('resp', {msg: dado});
+            
         });
         
     });

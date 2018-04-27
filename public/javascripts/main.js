@@ -4,7 +4,7 @@
         console.log(msg);
     });
 
-    socket.on('broad', function(msg) {
+    socket.on('newSignal', function(msg) {
         console.log(msg);
-    })
+    });
 })()
