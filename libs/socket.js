@@ -6,24 +6,31 @@ module.exports = function(io) {
 
     arduino.on('connection', function(socket) {
         var clientID;
+        var cnt = 1;
+
         console.log('Arduino connected!');
 
         socket.on('connection', function(data) {
+            clientID = data.id;
             console.log(data);
         });
 
-        socket.on('newSignal', function(data) {
-            console.log(data);
-            dado = data;
-        });
-
-        socket.on('haha', function(data) {
-            console.log(data);
-            console.log(typeof dado);
-            socket.emit('resp', {msg: dado});
+        socket.on('sigSend', function(data) {
+            if (data.msg == 'start') {
+                console.log("VOU RECEBER DADOS!");
+            }
             
+            if (data.msg == 'end') {
+                console.log("ACABARAM-SE OS DADOS!");
+            }
         });
-        
+
+        socket.on('arrayPart', function(data) {
+            console.log(data+" --- "+cnt);
+            cnt++;
+            console.log('/////////////');
+        });
+
     });
 
     admin.on('connection', function(socket) {
@@ -34,6 +41,5 @@ module.exports = function(io) {
         console.log('Admin connected!');
 
         //socket.emit('sayhi', { msg: 'Hi webclient!'});
-        //socket.emit('id', {msg: "Unique id: "+socket.id});
     });
 }
