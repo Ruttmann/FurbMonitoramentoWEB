@@ -3,9 +3,9 @@ module.exports = function() {
     var mongoose = require('mongoose');
 
     var arduino = mongoose.Schema({
-        title: String,
+        id: String,
         description: String,
-        status: Boolean
+        signals: [String]
     });
 
     return mongoose.model('arduino', arduino);

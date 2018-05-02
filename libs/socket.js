@@ -1,12 +1,16 @@
+
 module.exports = function(io) {
+    //namespaces
     var arduino = io.of('/arduino');
     var admin = io.of('/admin');
 
-    var dado;
+    //model do banco de dados
+    var Arduino = require('../model/arduino')();
 
     arduino.on('connection', function(socket) {
         var clientID;
         var cnt = 1;
+        var arduinoBanco = new Arduino;
 
         console.log('Arduino connected!');
 
@@ -18,14 +22,23 @@ module.exports = function(io) {
         socket.on('sigSend', function(data) {
             if (data.msg == 'start') {
                 console.log("VOU RECEBER DADOS!");
+
+                arduinoBanco.id = "S403";
+                arduinoBanco.description = "Descrição de teste!";
             }
             
             if (data.msg == 'end') {
                 console.log("ACABARAM-SE OS DADOS!");
+
+                arduinoBanco.save(function(err, arduinoBanco) {
+                    if (err) return console.error(err);
+                    console.log("Çalvou!");
+                });
             }
         });
 
         socket.on('arrayPart', function(data) {
+            arduinoBanco.signals.push(data);
             console.log(data+" --- "+cnt);
             cnt++;
             console.log('/////////////');
