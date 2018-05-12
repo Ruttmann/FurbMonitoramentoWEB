@@ -10,13 +10,15 @@
     //     console.log(msg);
     // });
 
-    socket.emit('sigSend', {msg: 'start'});
+    // socket.emit('sigSend', {msg: 'start'});
 
-    socket.emit('arrayPart', "[123, 456, 789, 000]");
-    socket.emit('arrayPart', "[123, 456, 789, 000]");
-    socket.emit('arrayPart', "[123, 456, 789, 000]");
-    socket.emit('arrayPart', "[123, 456, 789, 000]");
-    socket.emit('arrayPart', "[123, 456, 789, 000]");
+    // socket.emit('arrayPart', "[123, 456, 789, 000]");
+    // socket.emit('arrayPart', "[123, 456, 789, 000]");
+    // socket.emit('arrayPart', "[123, 456, 789, 000]");
+    // socket.emit('arrayPart', "[123, 456, 789, 000]");
+    // socket.emit('arrayPart', "[123, 456, 789, 000]");
 
-    socket.emit('sigSend', {msg: 'end'});
+    // socket.emit('sigSend', {msg: 'end'});
+
+    socket.emit('identify', {id: 'browser123'});
 })()
