@@ -8,12 +8,11 @@ module.exports = function() {
     //     signals: [String]
     // })
 
-    let arduino = mongoose.Schema({
-        device_Id: String,
-        description: String,
-        signal1_Id: String,
-        signal2_Id: String
+    let signals = mongoose.Schema({
+        signal_Id: String,
+        signal1: [String],
+        signal2: [String]
     })
 
-    return mongoose.model('arduino', arduino)
+    return mongoose.model('signals', signals)
 }
