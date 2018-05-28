@@ -16,11 +16,26 @@ module.exports = function(io) {
         let cnt = 1
         let arduinoBanco = new Arduino
         let signalsBanco = new Signals
+        let isNewDevice = false
 
         // console.log('Arduino connected!')
 
         socket.on('identify', data => {
             clientID = data.id
+            var query = Arduino.where({ device_Id: clientID })
+            query.findOne(function(err, record) {
+                if (err) console.log('Error on identifying query.')
+                if (!record) {
+                    console.log(`${clientID} is a new device.`)
+                    isNewDevice = true
+                    arduinoBanco.device_Id = clientID
+                    arduinoBanco.description = 'Fill a description for the device.'
+                    arduinoBanco.save((err, arduinoBanco) => {
+                        if (!err) console.log(`Device ${clientID} inserted on DB.`)
+                        else return console.error(err)
+                    })
+                }
+            })
             console.log(`Arduino client '${clientID}' identified.`)
         })
 

@@ -19,9 +19,7 @@
     // socket.emit('arrayPart', "[123, 456, 789, 000]")
 
     // socket.emit('sigSend', {msg: 'end'})
-
-    socket.emit('identify', {id: 'browser123'})
-    socket.emit('monitoring', { msg: 'isEmpty' })
+    socket.emit('identify', {id: 'A444'})
 
     socket.on('monitoring', msg => console.log(msg))
 })()
