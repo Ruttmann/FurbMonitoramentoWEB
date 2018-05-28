@@ -4,12 +4,12 @@ module.exports = function(io) {
     let arduino = io.of('/arduino')
     let admin = io.of('/admin')
 
-    //model do banco de dados
+    //models do banco de dados
     let Arduino = require('../model/arduino')()
     let Signals = require('../model/signals')()
 
     //Objeto de data para monitoramento
-    let dateNow = new Date()
+    let dateNow;
 
     arduino.on('connection', socket => {
         let clientID
@@ -17,11 +17,11 @@ module.exports = function(io) {
         let arduinoBanco = new Arduino
         let signalsBanco = new Signals
 
-        console.log('Arduino connected!')
+        // console.log('Arduino connected!')
 
         socket.on('identify', data => {
             clientID = data.id
-            console.log(`Arduino client '${clientID}' has connected.`)
+            console.log(`Arduino client '${clientID}' identified.`)
         })
 
         socket.on('sigSend', data => {
@@ -53,7 +53,7 @@ module.exports = function(io) {
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
-                    console.log(dateNow.getHours())
+                    dateNow = new Date()
                     if (dateNow.getHours() >= 22) {
                         socket.emit('monitoring', { msg: 'ok' })
                     }    
@@ -61,12 +61,20 @@ module.exports = function(io) {
                         socket.emit('monitoring', { msg: 'nok' })
                     }
                     break
+                case 'getSignal':
+                    //buscar sinais do dispositivo e enviar
+                    break    
                 default:
                     break
             }
         })
 
-        socket.on('list', data => {
+        // socket.on('test', data => {
+            // socket.emit('test', '[123, 456, 789, 000, 666, 123, 456, 789, 000, 666, 123, 456, 789, 000, 666]')
+            // socket.emit('test', { msg: '[123, 456, 789, 000, 666, 123, 456, 789, 000, 666, 123, 456, 789, 000, 666]' })
+        // })
+
+        // socket.on('list', data => {
             // Arduino.find(function(err, dados) {
             //     if (err) return console.error(err)
             //     dados[0].signals.forEach(element => {
@@ -79,16 +87,16 @@ module.exports = function(io) {
             //         console.log(element)
             //     })
             // })
-        })
+        // })
     })
 
-    admin.on('connection', socket => {
+    // admin.on('connection', socket => {
         /*
         * socket.emit => emite apenas ao socket específico
         * socket.nsp.emit => emite para todos os sockets do namespace
         */
-        console.log('Admin connected!')
+        // console.log('Admin connected!')
 
         //socket.emit('sayhi', { msg: 'Hi webclient!'})
-    })
+    // })
 }
