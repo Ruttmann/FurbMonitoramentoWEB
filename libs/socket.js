@@ -6,7 +6,7 @@ module.exports = function(io) {
 
     //models do banco de dados
     let Arduino = require('../model/arduino')()
-    let Signals = require('../model/signals')()
+    let Signal = require('../model/signal')()
 
     //Objeto de data para monitoramento
     let dateNow;
@@ -14,55 +14,72 @@ module.exports = function(io) {
     arduino.on('connection', socket => {
         let clientID
         let cnt = 1
-        let arduinoBanco = new Arduino
-        let signalsBanco = new Signals
+        let arduinoBanco
+        let signalBanco
         let isNewDevice = false
-
-        // console.log('Arduino connected!')
 
         socket.on('identify', data => {
             clientID = data.id
-            var query = Arduino.where({ device_Id: clientID })
+            let query = Arduino.where({ device_Id: clientID })
             query.findOne(function(err, record) {
                 if (err) console.log('Error on identifying query.')
                 if (!record) {
-                    console.log(`${clientID} is a new device.`)
+                    console.log(`'${clientID}' is a new Arduino client.`)
                     isNewDevice = true
+                    arduinoBanco = new Arduino
                     arduinoBanco.device_Id = clientID
-                    arduinoBanco.description = 'Fill a description for the device.'
-                    arduinoBanco.save((err, arduinoBanco) => {
-                        if (!err) console.log(`Device ${clientID} inserted on DB.`)
-                        else return console.error(err)
-                    })
+                    // arduinoBanco.save((err, arduinoBanco) => {
+                    //     if (!err) console.log(`Arduino client '${clientID}' inserted on DB.`)
+                    //     else return console.error(err)
+                    // })
+                } else {
+                    console.log(`'${clientID}' isn't a new Arduino client.`)
+                    arduinoBanco = record
                 }
             })
-            console.log(`Arduino client '${clientID}' identified.`)
         })
 
         socket.on('sigSend', data => {
             switch (data.msg) {
                 case 'start':
                     console.log(`Receiving signals from Arduino client '${clientID}'`)
-                    arduinoBanco.id = clientID
-                    arduinoBanco.description = 'New Arduino client'
+                    signalBanco = new Signal
                     break
                 case 'end':
                     console.log(`Signals reception for Arduino client '${clientID}' finished.`)
-                    arduinoBanco.save((err, arduinoBanco) => {
-                        if (!err) console.log(`Signals for Arduino client '${clientID}' successfully stored.`)
+                    if (isNewDevice)
+                        arduinoBanco.signalKeys.push(signalBanco.id)
+                    else {
+                        //TODO: Verificar esta lógica. Só pode zerar o array na primeira vez que entra aqui
+                        arduinoBanco.set({ signalKeys: [] })
+                        arduinoBanco.signalKeys.push(signalBanco.id)
+                    }    
+                    signalBanco.save((err, signalBanco) => {
+                        if (!err) {
+                            console.log(`Signal for Arduino client '${clientID}' inserted on DB.`)
+                        }
                         else return console.error(err)
                     })
-                    break
-                default:
                     break
             }
         })
 
         socket.on('arrayPart', data => {
-            arduinoBanco.signals.push(data)
+            signalBanco.signal.push(data)
+            //Debug purposes
             console.log(data+" --- "+cnt)
             cnt++
             console.log('/////////////')
+            //Debug purposes
+        })
+
+        socket.on('endBoot', data => {
+            if (data.msg == 'start') {
+                arduinoBanco.save((err, arduinoBanco) => {
+                    if (!err) console.log(`Arduino client infos '${clientID}' successfully stored.`)
+                    else return console.error(err)
+                })
+            }
         })
 
         socket.on('monitoring', data => {

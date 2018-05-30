@@ -4,7 +4,7 @@ module.exports = function() {
 
     let arduino = mongoose.Schema({
         device_Id: String,
-        description: String,
+        description: { type: String, default: 'Fill a description for the device.' },
         signalKeys: [String]
     })
 

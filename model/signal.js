@@ -3,7 +3,8 @@ module.exports = function() {
     let mongoose = require('mongoose')
 
     let signals = mongoose.Schema({
-        deviceName: String,
+        deviceName: { type: String, default: 'Fill a device name' },
+        description: { type: String, default: `Device added on ${new Date().toDateString()}` },
         signal: [String]
     })
 
