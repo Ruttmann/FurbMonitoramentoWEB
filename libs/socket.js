@@ -1,3 +1,7 @@
+/*
+        * socket.emit => emite apenas ao socket específico
+        * socket.nsp.emit => emite para todos os sockets do namespace
+        */
 
 module.exports = function(io) {
     //namespaces
@@ -17,6 +21,7 @@ module.exports = function(io) {
         let arduinoBanco
         let signalBanco
         let isNewDevice = false
+        let isFirstSignal = true
 
         socket.on('identify', data => {
             clientID = data.id
@@ -28,10 +33,6 @@ module.exports = function(io) {
                     isNewDevice = true
                     arduinoBanco = new Arduino
                     arduinoBanco.device_Id = clientID
-                    // arduinoBanco.save((err, arduinoBanco) => {
-                    //     if (!err) console.log(`Arduino client '${clientID}' inserted on DB.`)
-                    //     else return console.error(err)
-                    // })
                 } else {
                     console.log(`'${clientID}' isn't a new Arduino client.`)
                     arduinoBanco = record
@@ -47,13 +48,11 @@ module.exports = function(io) {
                     break
                 case 'end':
                     console.log(`Signals reception for Arduino client '${clientID}' finished.`)
-                    if (isNewDevice)
-                        arduinoBanco.signalKeys.push(signalBanco.id)
-                    else {
-                        //TODO: Verificar esta lógica. Só pode zerar o array na primeira vez que entra aqui
+                    if (!isNewDevice && isFirstSignal) {
                         arduinoBanco.set({ signalKeys: [] })
-                        arduinoBanco.signalKeys.push(signalBanco.id)
-                    }    
+                        isFirstSignal = !isFirstSignal
+                    }
+                    arduinoBanco.signalKeys.push(signalBanco.id)
                     signalBanco.save((err, signalBanco) => {
                         if (!err) {
                             console.log(`Signal for Arduino client '${clientID}' inserted on DB.`)
@@ -121,14 +120,4 @@ module.exports = function(io) {
             // })
         // })
     })
-
-    // admin.on('connection', socket => {
-        /*
-        * socket.emit => emite apenas ao socket específico
-        * socket.nsp.emit => emite para todos os sockets do namespace
-        */
-        // console.log('Admin connected!')
-
-        //socket.emit('sayhi', { msg: 'Hi webclient!'})
-    // })
 }
