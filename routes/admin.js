@@ -4,6 +4,7 @@ let router = express.Router()
 
 router.get('/', function(req, res, next) {
     res.render('admin', { title: 'Monitoramento PDGe4'})
+    // res.render('boottest')
     // model.find(null, function(err, data) {
     //     if (err) {
     //         throw err

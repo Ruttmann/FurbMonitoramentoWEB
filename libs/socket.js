@@ -1,23 +1,20 @@
 /*
-        * socket.emit => emite apenas ao socket específico
-        * socket.nsp.emit => emite para todos os sockets do namespace
-        */
+* socket.emit => emite apenas ao socket específico
+* socket.nsp.emit => emite para todos os sockets do namespace
+*/
 
 module.exports = function(io) {
     //namespaces
-    let arduino = io.of('/arduino')
-    let admin = io.of('/admin')
+    let arduinoNM = io.of('/arduino')
+    let adminNM = io.of('/admin')
 
     //models do banco de dados
     let Arduino = require('../model/arduino')()
     let Signal = require('../model/signal')()
 
-    //Objeto de data para monitoramento
-    let dateNow;
-
-    arduino.on('connection', socket => {
+    arduinoNM.on('connection', socket => {
         let clientID
-        let cnt = 1
+        let cnt = 1 //Debug purposes
         let arduinoBanco
         let signalBanco
         let isNewDevice = false
@@ -27,7 +24,7 @@ module.exports = function(io) {
             clientID = data.id
             let query = Arduino.where({ device_Id: clientID })
             query.findOne(function(err, record) {
-                if (err) console.log('Error on identifying query.')
+                if (err) return console.error('Error on identifying query.', err)
                 if (!record) {
                     console.log(`'${clientID}' is a new Arduino client.`)
                     isNewDevice = true
@@ -45,6 +42,7 @@ module.exports = function(io) {
                 case 'start':
                     console.log(`Receiving signals from Arduino client '${clientID}'`)
                     signalBanco = new Signal
+                    signalBanco.description = `Device added on ${new Date().toLocaleString()}`
                     break
                 case 'end':
                     console.log(`Signals reception for Arduino client '${clientID}' finished.`)
@@ -81,29 +79,65 @@ module.exports = function(io) {
             }
         })
 
+        let comando1 = null
+        let comando2 = null
+
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
-                    dateNow = new Date()
-                    if (dateNow.getHours() >= 22) {
+                    if (new Date().getHours() >= 21) {
                         socket.emit('monitoring', { msg: 'ok' })
-                    }    
-                    else {
+
+                        //Atualiza objeto de banco do dispositivo
+                        let queryArduino = Arduino.where({ device_Id: clientID })
+                        queryArduino.findOne(function(err, record) {
+                            if (err) return console.error(err)
+                            arduinoBanco = record
+                        })
+
+                        //Busca comando 1 do dispositivo
+                        let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
+                        querySignal1.findOne(function(err, record) {
+                            if (err) return console.error(err)
+                            if (record) {
+                                comando1 = record.signal
+                                console.log(comando1.length)
+                            }
+                        })
+
+                        //Busca comando 2 do dispositivo
+                        let querySignal2 = Signal.where({ _id: arduinoBanco.signalKeys[1] })
+                        querySignal2.findOne(function(err, record) {
+                            if (err) return console.error(err)
+                            if (record) {
+                                comando2 = record.signal
+                                console.log(comando2.length)
+                            }
+                        })
+                    } else {
                         socket.emit('monitoring', { msg: 'nok' })
                     }
                     break
-                case 'getSignal':
-                    //buscar sinais do dispositivo e enviar
+                case 'send1':
+                    //enviar comando 1 do dispositivo
+                    if (comando1 != null) {
+
+                    }
+
+                    socket.emit('monitoring', { msg: 'endSignals'})
+                    break
+                case 'send2':
+                    //enviar comando 2 do dispositivo
+                    if (comando2 != null) {
+                        
+                    }
+                    
+                    socket.emit('monitoring', { msg: 'endSignals'})
                     break    
                 default:
                     break
             }
         })
-
-        // socket.on('test', data => {
-            // socket.emit('test', '[123, 456, 789, 000, 666, 123, 456, 789, 000, 666, 123, 456, 789, 000, 666]')
-            // socket.emit('test', { msg: '[123, 456, 789, 000, 666, 123, 456, 789, 000, 666, 123, 456, 789, 000, 666]' })
-        // })
 
         // socket.on('list', data => {
             // Arduino.find(function(err, dados) {

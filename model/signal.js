@@ -4,7 +4,7 @@ module.exports = function() {
 
     let signals = mongoose.Schema({
         deviceName: { type: String, default: 'Fill a device name' },
-        description: { type: String, default: `Device added on ${new Date().toDateString()}` },
+        description: String,
         signal: [String]
     })
 
