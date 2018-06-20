@@ -85,7 +85,7 @@ module.exports = function(io) {
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
-                    if (new Date().getHours() >= 21) {
+                    if (new Date().getHours() >= 22) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         //Atualiza objeto de banco do dispositivo
@@ -101,7 +101,6 @@ module.exports = function(io) {
                             if (err) return console.error(err)
                             if (record) {
                                 comando1 = record.signal
-                                console.log(comando1.length)
                             }
                         })
 
@@ -111,7 +110,6 @@ module.exports = function(io) {
                             if (err) return console.error(err)
                             if (record) {
                                 comando2 = record.signal
-                                console.log(comando2.length)
                             }
                         })
                     } else {
@@ -120,38 +118,25 @@ module.exports = function(io) {
                     break
                 case 'send1':
                     //enviar comando 1 do dispositivo
-                    if (comando1 != null) {
-
+                    if (comando1 != null && comando1.length > 0) {
+                        // socket.emit('sigPart', comando1[0])
+                        socket.emit('sP', { s: `[${comando1[0]}]` })
+                        comando1.splice(0,1)
+                    } else {
+                        socket.emit('sP', { s: 'eS'})
                     }
-
-                    socket.emit('monitoring', { msg: 'endSignals'})
                     break
                 case 'send2':
                     //enviar comando 2 do dispositivo
-                    if (comando2 != null) {
-                        
+                    if (comando2 != null && comando2.length > 0) {
+                        // socket.emit('sigPart', comando2[0])
+                        socket.emit('sP', { s: `[${comando2[0]}]` })
+                        comando2.splice(0,1)
+                    } else {
+                        socket.emit('sP', { s: 'eS'})
                     }
-                    
-                    socket.emit('monitoring', { msg: 'endSignals'})
                     break    
-                default:
-                    break
             }
         })
-
-        // socket.on('list', data => {
-            // Arduino.find(function(err, dados) {
-            //     if (err) return console.error(err)
-            //     dados[0].signals.forEach(element => {
-            //         console.log(element)
-            //     })
-            // })
-
-            // Arduino.find({ id: 'S403' }, function(err, dados) {
-            //     dados[0].signals.forEach(element => {
-            //         console.log(element)
-            //     })
-            // })
-        // })
     })
 }
