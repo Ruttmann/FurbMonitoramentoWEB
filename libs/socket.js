@@ -73,7 +73,10 @@ module.exports = function(io) {
         socket.on('endBoot', data => {
             if (data.msg == 'start') {
                 arduinoBanco.save((err, arduinoBanco) => {
-                    if (!err) console.log(`Arduino client infos '${clientID}' successfully stored.`)
+                    if (!err) {
+                        console.log(`Arduino client infos '${clientID}' successfully stored.`)  
+                        console.log(`Arduino client '${clientID}' started room monitoring.`)
+                    } 
                     else return console.error(err)
                 })
             }
@@ -85,7 +88,7 @@ module.exports = function(io) {
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
-                    if (new Date().getHours() >= 22) {
+                    if (new Date().getHours() >= process.env.OFF_TIME) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         //Atualiza objeto de banco do dispositivo
