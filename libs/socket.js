@@ -88,6 +88,7 @@ module.exports = function(io) {
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
+                    console.log(`>>>${process.env.OFF_TIME}<<<`)
                     if (new Date().getHours() >= process.env.OFF_TIME) {
                         socket.emit('monitoring', { msg: 'ok' })
 
