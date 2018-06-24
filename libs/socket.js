@@ -143,8 +143,9 @@ module.exports = function(io) {
             }
         })
 
-        socket.on('imAlive', data => {
-            console.log(`Arduino client ${data.msg} is alive.`)
+        socket.on('keepAlive', data => {
+            let id = data.msg
+            console.log(`Arduino client ${id} is alive.`)
         })
 
         socket.on('disconnect', data => {
