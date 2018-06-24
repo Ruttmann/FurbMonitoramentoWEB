@@ -142,5 +142,9 @@ module.exports = function(io) {
                     break    
             }
         })
+
+        socket.on('disconnect', data => {
+            console.log(`Arduino client ${clientID} has disconnected.`)
+        })
     })
 }
