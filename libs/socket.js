@@ -13,25 +13,38 @@ module.exports = function(io) {
     let Signal = require('../model/signal')()
 
     arduinoNM.on('connection', socket => {
-        let clientID
-        let cnt = 1 //Debug purposes
+        let cnt = 1 //DEBUG
         let arduinoBanco
         let signalBanco
         let isNewDevice = false
         let isFirstSignal = true
 
+        //DEBUG
+        socket.on('clients', data => {
+            arduinoNM.clients((error, clients) => {
+                if (error) throw error
+                console.log('<<<')
+                console.log(clients)
+                console.log('<<<')
+            })
+            console.log('>>>')
+            console.log(arduinoNM.connected)
+            console.log('>>>')
+        })
+        //DEBUG
+
         socket.on('identify', data => {
-            clientID = data.id
-            let query = Arduino.where({ device_Id: clientID })
+            socket.clientID = data.id
+            let query = Arduino.where({ device_Id: socket.clientID })
             query.findOne(function(err, record) {
-                if (err) return console.error('Error on identifying query.', err)
+                if (err) return console.error('[ERR] Erro na query de banco (identify).', err)
                 if (!record) {
-                    console.log(`'${clientID}' is a new Arduino client.`)
+                    console.log(`[NEW] Cliente '${socket.clientID}' identificado.`)
                     isNewDevice = true
                     arduinoBanco = new Arduino
-                    arduinoBanco.device_Id = clientID
+                    arduinoBanco.device_Id = socket.clientID
                 } else {
-                    console.log(`'${clientID}' isn't a new Arduino client.`)
+                    console.log(`[OLD] Cliente '${socket.clientID}' identificado.`)
                     arduinoBanco = record
                 }
             })
@@ -40,12 +53,12 @@ module.exports = function(io) {
         socket.on('sigSend', data => {
             switch (data.msg) {
                 case 'start':
-                    console.log(`Receiving signals from Arduino client '${clientID}'`)
+                    console.log(`[SIG] Recebendo segmentos de sinal do cliente '${socket.clientID}'`)
                     signalBanco = new Signal
-                    signalBanco.description = `Device added on ${new Date().toLocaleString()}`
+                    signalBanco.description = `Comando adicionado em ${new Date().toLocaleString()}`
                     break
                 case 'end':
-                    console.log(`Signals reception for Arduino client '${clientID}' finished.`)
+                    console.log(`[SIG] Recepção de segmentos de sinal do cliente '${socket.clientID}' terminou.`)
                     if (!isNewDevice && isFirstSignal) {
                         arduinoBanco.set({ signalKeys: [] })
                         isFirstSignal = !isFirstSignal
@@ -53,7 +66,7 @@ module.exports = function(io) {
                     arduinoBanco.signalKeys.push(signalBanco.id)
                     signalBanco.save((err, signalBanco) => {
                         if (!err) {
-                            console.log(`Signal for Arduino client '${clientID}' inserted on DB.`)
+                            console.log(`[SIG] Comando para o cliente '${socket.clientID}' persistido.`)
                         }
                         else return console.error(err)
                     })
@@ -74,8 +87,8 @@ module.exports = function(io) {
             if (data.msg == 'start') {
                 arduinoBanco.save((err, arduinoBanco) => {
                     if (!err) {
-                        console.log(`Arduino client infos '${clientID}' successfully stored.`)  
-                        console.log(`Arduino client '${clientID}' started room monitoring.`)
+                        console.log(`[ARD] Atributos do cliente '${socket.clientID}' persistidos.`)  
+                        console.log(`[ARD] Cliente '${socket.clientID}' iniciou monitoramento.`)
                     } 
                     else return console.error(err)
                 })
@@ -93,7 +106,7 @@ module.exports = function(io) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         //Atualiza objeto de banco do dispositivo
-                        let queryArduino = Arduino.where({ device_Id: clientID })
+                        let queryArduino = Arduino.where({ device_Id: socket.clientID })
                         queryArduino.findOne(function(err, record) {
                             if (err) return console.error(err)
                             arduinoBanco = record
@@ -123,7 +136,6 @@ module.exports = function(io) {
                 case 'send1':
                     //enviar comando 1 do dispositivo
                     if (comando1 != null && comando1.length > 0) {
-                        // socket.emit('sigPart', comando1[0])
                         socket.emit('sP', { s: `[${comando1[0]}]` })
                         comando1.splice(0,1)
                     } else {
@@ -133,7 +145,6 @@ module.exports = function(io) {
                 case 'send2':
                     //enviar comando 2 do dispositivo
                     if (comando2 != null && comando2.length > 0) {
-                        // socket.emit('sigPart', comando2[0])
                         socket.emit('sP', { s: `[${comando2[0]}]` })
                         comando2.splice(0,1)
                     } else {
@@ -145,11 +156,11 @@ module.exports = function(io) {
 
         socket.on('keepAlive', data => {
             let id = data.msg
-            console.log(`Arduino client ${id} is alive.`)
+            console.log(`[KEP] Keepalive do cliente '${id}'.`)
         })
 
         socket.on('disconnect', data => {
-            console.log(`Arduino client ${clientID} has disconnected.`)
+            console.log(`[DSC] Cliente '${socket.clientID}' se desconectou.`)
         })
     })
 }

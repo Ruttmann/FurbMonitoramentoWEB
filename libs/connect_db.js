@@ -3,9 +3,13 @@ let db
 
 module.exports = function() {
     if (!db) {
-        // db = mongoose.connect('mongodb://localhost/arduino')
-        db = mongoose.connect(process.env.MONGODB_URI)
-        // db.on('error', console.log("Erro de conexão ao banco de dados!"))
+        if (process.env.MONGODB_URI == undefined) {
+            console.log("DEVELOPMENT DB")
+            db = mongoose.connect('mongodb://localhost/arduino')
+        } else {
+            console.log("PRODUCTION DB")
+            db = mongoose.connect(process.env.MONGODB_URI)
+        }
     }
     return db
 }
