@@ -3,9 +3,11 @@ module.exports = function() {
     let mongoose = require('mongoose')
 
     let arduino = mongoose.Schema({
-        device_Id: String,
-        description: { type: String, default: 'Fill a description for the device.' },
-        signalKeys: [String]
+        clientID: String,
+        description: { type: String, default: 'Preencha uma descrição.' },
+        signalKeys: [String],
+        //isOnline: { type: Boolean, default: true },
+        hasFailure: { type: String, default: 'Não' }
     })
 
     return mongoose.model('arduino', arduino)

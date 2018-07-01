@@ -12,8 +12,8 @@
     // socket.emit('arrayPart', "[123, 456, 789, 000]")
     // socket.emit('arrayPart', "[123, 456, 789, 000]")
 
-    socket.emit('identify', {id:'S666'})
-    socket.emit('clients', { msg: 'blabalbal' })
+    socket.emit('identify', {id:'S555'})
+    socket.emit('endBoot', {msg: 'start'})
 
     // setTimeout(() => {
     //     console.log("Sinal1"+Date.now())

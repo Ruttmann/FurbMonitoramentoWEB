@@ -4,50 +4,160 @@
 */
 
 module.exports = function(io) {
-    //namespaces
+    //namespace
     let arduinoNM = io.of('/arduino')
-    let adminNM = io.of('/admin')
 
     //models do banco de dados
     let Arduino = require('../model/arduino')()
     let Signal = require('../model/signal')()
 
+    //Array com os id's dos clientes web conectados.
+    let adminsWeb = [];
+
+    //Array com os devices que estão online
+    let devicesOnline = [];
+
+    //Array com os devices que estão offline
+    let devicesOffline = [];
+
+    //Array com todos os sinais cadastrados em banco
+    let signalsList = [];
+
+    //Contém todos os objetos de Dispositivos IR do banco de dados
+    let devicesDB
+
+    //Contém o clientID de todos os Dispositivos IR conectados ao Sistema Gerenciador
+    let connectedClients
+
     arduinoNM.on('connection', socket => {
-        let cnt = 1 //DEBUG
+        let counterSignal = 1
         let arduinoBanco
         let signalBanco
         let isNewDevice = false
         let isFirstSignal = true
 
-        //DEBUG
-        socket.on('clients', data => {
-            arduinoNM.clients((error, clients) => {
-                if (error) throw error
-                console.log('<<<')
-                console.log(clients)
-                console.log('<<<')
+        //Funções do painel de monitoramento
+        async function updateDevicesStatus() {
+            //Zera as duas listas
+            devicesOnline.splice(0,devicesOnline.length)
+            devicesOffline.splice(0,devicesOffline.length)
+
+            connectedClients = await getAllConnectedClients()
+            devicesDB = await getAllDevices()
+
+            devicesDB.forEach((currentDevice) => {
+                if (connectedClients.indexOf(currentDevice.clientID) == -1)
+                    devicesOffline.push(currentDevice)
+                else
+                    devicesOnline.push(currentDevice)
             })
-            console.log('>>>')
-            console.log(arduinoNM.connected)
-            console.log('>>>')
+            console.log("[LOG] Lista de dispositivos online atualizada.")
+
+            await updateDevicesSignalsNames()
+            sendClientDevices()
+        }
+
+        function updateDevicesSignalsNames() {
+            return new Promise((resolve,reject) => {
+                devicesDB.forEach(element => {
+                    let sig1 = element.signalKeys[0]
+                    let sig2 = element.signalKeys[1]
+    
+                    signalsList.forEach(signal => {
+                        if (signal._id == sig1)
+                            element.signalKeys[0] = signal.deviceName
+                        if (signal._id == sig2)
+                            element.signalKeys[1] = signal.deviceName
+                    });
+
+                    if (!sig1)
+                        element.signalKeys[0] = '[vazio]'
+                    if (!sig2)
+                        element.signalKeys[1] = '[vazio]'
+                });
+                resolve(true)
+            })
+
+        }
+
+        function sendClientDevices() {
+            adminsWeb.forEach((currentClient) => {
+                arduinoNM.connected[currentClient].emit('updateDevices', { online: devicesOnline, offline: devicesOffline })
+            })
+        }
+
+        async function updateSignalsList() {
+            signalsList = await getAllSignals()
+
+            sendClientSignals()
+        }
+
+        function sendClientSignals() {
+            adminsWeb.forEach((currentClient) => {
+                arduinoNM.connected[currentClient].emit('updateSignals', { signals: signalsList })
+            })
+        }
+
+        function getAllConnectedClients() {
+            return new Promise((resolve,reject) => {
+                arduinoNM.clients((err, results) => {
+                    if (err) return console.error('[ERR] Erro listando todos os clientes conectados.')
+                    let clientsIds = []
+                    results.forEach((currentValue) => {
+                        if (arduinoNM.connected[currentValue].clientID != 'web' && arduinoNM.connected[currentValue].clientID != undefined)
+                            clientsIds.push(arduinoNM.connected[currentValue].clientID)
+                    })
+                    resolve(clientsIds)
+                })
+            })
+        }
+
+        function getAllDevices() {
+            return new Promise((resolve, reject) => {
+                let query = Arduino.where({})
+                query.find((err,results) => {
+                    if (err) return console.error('[ERR] Erro buscando todos os dispositivos do banco para WEB.')
+                    resolve(results)
+                })
+            })
+        }
+        
+        function getAllSignals() {
+            return new Promise((resolve,reject) => {
+                let query = Signal.where({})
+                query.find( (err, results) => {
+                    if (err) return console.error('[ERR] Erro buscando todos os sinais do banco para WEB.')
+                    resolve(results)
+                })
+            })
+        }
+
+        socket.on('sendAllData', () => {
+            updateDevicesStatus()
+            updateSignalsList()
         })
-        //DEBUG
 
         socket.on('identify', data => {
             socket.clientID = data.id
-            let query = Arduino.where({ device_Id: socket.clientID })
-            query.findOne(function(err, record) {
-                if (err) return console.error('[ERR] Erro na query de banco (identify).', err)
-                if (!record) {
-                    console.log(`[NEW] Cliente '${socket.clientID}' identificado.`)
-                    isNewDevice = true
-                    arduinoBanco = new Arduino
-                    arduinoBanco.device_Id = socket.clientID
-                } else {
-                    console.log(`[OLD] Cliente '${socket.clientID}' identificado.`)
-                    arduinoBanco = record
-                }
-            })
+
+            if (socket.clientID == 'web') {
+                console.log("[WEB] Cliente web se conectou.")
+                adminsWeb.push(socket.id)
+            } else {
+                let query = Arduino.where({ clientID: socket.clientID })
+                query.findOne( (err, record) => {
+                    if (err) return console.error('[ERR] Erro na query de banco (identify).', err)
+                    if (!record) {
+                        console.log(`[NEW] Cliente '${socket.clientID}' identificado.`)
+                        isNewDevice = true
+                        arduinoBanco = new Arduino
+                        arduinoBanco.clientID = socket.clientID
+                    } else {
+                        console.log(`[OLD] Cliente '${socket.clientID}' identificado.`)
+                        arduinoBanco = record
+                    }
+                })
+            }
         })
 
         socket.on('sigSend', data => {
@@ -55,7 +165,7 @@ module.exports = function(io) {
                 case 'start':
                     console.log(`[SIG] Recebendo segmentos de sinal do cliente '${socket.clientID}'`)
                     signalBanco = new Signal
-                    signalBanco.description = `Comando adicionado em ${new Date().toLocaleString()}`
+                    signalBanco.description = `Adicionado em: ${new Date().toLocaleString('pt-BR')}`
                     break
                 case 'end':
                     console.log(`[SIG] Recepção de segmentos de sinal do cliente '${socket.clientID}' terminou.`)
@@ -65,10 +175,9 @@ module.exports = function(io) {
                     }
                     arduinoBanco.signalKeys.push(signalBanco.id)
                     signalBanco.save((err, signalBanco) => {
-                        if (!err) {
-                            console.log(`[SIG] Comando para o cliente '${socket.clientID}' persistido.`)
-                        }
-                        else return console.error(err)
+                        if (err) return console.error(err)
+                        console.log(`[SIG] Comando para o cliente '${socket.clientID}' persistido.`)
+                        updateSignalsList()
                     })
                     break
             }
@@ -77,21 +186,24 @@ module.exports = function(io) {
         socket.on('arrayPart', data => {
             signalBanco.signal.push(data)
             //Debug purposes
-            console.log(data+" --- "+cnt)
-            cnt++
+            console.log(data+" --- "+counterSignal)
+            counterSignal++
             console.log('/////////////')
             //Debug purposes
         })
 
         socket.on('endBoot', data => {
-            if (data.msg == 'start') {
-                arduinoBanco.save((err, arduinoBanco) => {
-                    if (!err) {
-                        console.log(`[ARD] Atributos do cliente '${socket.clientID}' persistidos.`)  
-                        console.log(`[ARD] Cliente '${socket.clientID}' iniciou monitoramento.`)
-                    } 
-                    else return console.error(err)
-                })
+            switch (data.msg) {
+                case 'start':
+                    arduinoBanco.save((err, arduinoBanco) => {
+                        if (err) return console.error(err)
+                        console.log(`[ARD] Atributos do cliente '${socket.clientID}' persistidos.`)
+                        updateDevicesStatus()
+                    })
+                    break;
+                case 'restart':
+                    updateDevicesStatus()
+                    break;
             }
         })
 
@@ -101,12 +213,16 @@ module.exports = function(io) {
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
-                    console.log(`>>>${process.env.OFF_TIME}<<<`)
-                    if (new Date().getHours() >= process.env.OFF_TIME) {
+                    let currentTime = new Date().getHours()
+                    let startOff = process.env.START_OFF_TIME
+                    let endOff = process.env.END_OFF_TIME
+                    console.log(`[INF] Autorizado a desligar entre ${startOff} e ${endOff} horas.`)
+                    // if (currentTime >= startOff || currentTime <= endOff) {
+                    if (currentTime >= 22 || currentTime <= 7) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         //Atualiza objeto de banco do dispositivo
-                        let queryArduino = Arduino.where({ device_Id: socket.clientID })
+                        let queryArduino = Arduino.where({ clientID: socket.clientID })
                         queryArduino.findOne(function(err, record) {
                             if (err) return console.error(err)
                             arduinoBanco = record
@@ -154,13 +270,28 @@ module.exports = function(io) {
             }
         })
 
+        socket.on('failure', data => {
+            let failure = data.id
+            Arduino.update({ _id: arduinoBanco._id }, { hasFailure: failure }, err => {
+                if (err) console.error(err)
+                console.log(`[FAILURE] Dispositivo ${socket.clientID} reportou falha: ${failure}.`)
+            })
+        })
+
         socket.on('keepAlive', data => {
             let id = data.msg
             console.log(`[KEP] Keepalive do cliente '${id}'.`)
         })
 
         socket.on('disconnect', data => {
-            console.log(`[DSC] Cliente '${socket.clientID}' se desconectou.`)
+            if (socket.clientID != 'web' && socket.clientID != undefined) {
+                console.log(`[DSC] Cliente '${socket.clientID}' se desconectou.`)
+                updateDevicesStatus()
+            } else {
+                let index = adminsWeb.indexOf(socket.id)
+                if (index != -1) adminsWeb.splice(index, 1)
+                console.log('[WEB] Cliente web se desconectou.')
+            }
         })
-    })
+    })    
 }

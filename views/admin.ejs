@@ -1,45 +1,166 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <title>PDGE4</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/stylesheets/admin.css">
+    
 </head>
 <body>
-    <header class="bg-dark">
-        <div class="col-100">
-            <h1 class="color-white"><%= title %></h1>
-        </div>
+    <header>
+        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+            <a class="navbar-brand pdge4" href="#">PDGE4</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="infolink">Informações</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#" id="displink">Dispositivos</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="#" id="comalink">Comandos</a>
+                    </li>
+                </ul>
+            </div>  
+        </nav>
     </header>
-    <section>
-        <div class="col-30 bg-grey">
-            <form action="/add" method="POST">
-                <legend>Incluir nova tarefa</legend>
-                <input type="text" name="title" placeholder="Título">
-                <textarea name="description" id="" cols="30" rows="10" placeholder="Descrição"></textarea>
-                <button type="submit">+ adicionar</button>
-            </form>
+    <main role="main" class="container">
+        <div class="infopanel">
+            <h1 class="mt-5">Informações</h1>
+            <p class="lead">Instruções de operação da página de monitoramento.</p>
+            <h3 class="mt-5">Dispositivos:</h3>
+            <p>Nesta área se encontram todos os dispositivos cadastrados. Para cada dispositivo as seguintes informações estão disponíveis:</p>
+            <ul>
+                <li><strong>ID:</strong> Identificador único do dispositivo. É igual ao número da sala onde está instalado.</li>
+                <li><strong>Descrição:</strong> Breve descrição sobre o dispositivo.</li>
+                <li><strong>Comandos:</strong> Exibe os comandos atribuídos a este dispositivo.</li>
+                <li><strong>Status:</strong> Mostra se o dispositivo está online ou offline. Quando online, há movimentos na sala.</li>
+                <li><strong>Falha:</strong> Caso ocorra uma falha no desligamento de algum equipamento da sala este campo estará preenchido. A ocorrência de uma falha é indício de problemas na emissão/recepção de comandos e/ou nos sensores que detectam o status dos equipamentos.</li>
+            </ul>
+            <h3 class="mt-5">Comandos:</h3>
+            <p>Nesta área encontram-se os comandos disponíveis para atribuir a dispositivos. É possível editar o nome e a descrição do comando.</p>
         </div>
-        <div class="col-70">
-            <table>
-                <tbody>
+        <div class="devicespanel hiddenOnStartup" style="margin-top:15px">
+            <h1 class="mt-5">Dispositivos</h1>
+            <p class="lead">Lista dos dispositivos cadastrados no servidor. Clique na linha do dispositivo na tabela para editar seus atributos.</p>
+            <table class="table table-dark table-hover">
+                <thead>
                     <tr>
-                        <td>1# <strong>Criar este sistema</strong></td>
-                        <td class="actions"><a href="/turn/1" class="red">not ok</a></td>
-                        <td class="highlight">asddfsdf sdfsdfs dfsdfsdfsdf</td>
+                        <th>ID</th>
+                        <th>Descrição</th>
+                        <th>Comandos</th>
+                        <th>Status</th>
+                        <th>Falha</th>
                     </tr>
-                </tbody>
+                    <tbody id="bodyDevices">
+                        <tr>
+                            <th>S555</th>
+                            <th>Descrição padrão.</th>
+                            <th>TTTTTT</th>
+                            <th><span class="badge badge-pill badge-success">Online</span></th>
+                            <th><span class="badge badge-pill badge-success">Não</span></th>
+                        </tr>
+                    </tbody>
+                </thead>
             </table>
         </div>
-    </section>
-    <script 
-        src="https://code.jquery.com/jquery-3.3.1.min.js"
-        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-        crossorigin="anonymous">
-    </script>
+        <div class="commandspanel hiddenOnStartup">
+            <h1 class="mt-5">Comandos</h1>
+            <p class="lead">Repositório de comandos. Clique no card desejado para editar as informações.</p>
+            <div class="card-columns" id="commandsCards">
+                <div class="card bg-dark">
+                    <div class="card-body text-center">
+                        <p class="card-text deviceName text-white">Ar Komeco ABC123</p>
+                        <p class="card-text deviceDescription text-white-50">Descrição do ar-condicionado</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modalCommands">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Editar comando</h4>
+                        <button class="close" type="button" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" id="id" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">Nome/modelo do equipamento:</label>
+                            <input type="text" class="form-control" id="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descrição:</label>
+                            <!-- <input type="text" class="form-control" id="description"> -->
+                            <textarea id="description" rows="3" class="form-control"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-dark" data-dismiss="modal">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="modalDevices">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Editar Dispositivo IR</h4>
+                        <button class="close" type="button" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <input type="text" id="id" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label for="id">ID do Dispositivo:</label>
+                            <input type="text" class="form-control" id="id">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descrição:</label>
+                            <textarea id="description" rows="2" class="form-control"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="commAr">Comando ar:</label>
+                            <select id="commAr" class="form-control"></select>
+                        </div>
+                        <div class="form-group">
+                                <label for="commProjetor">Comando projetor:</label>
+                                <select id="commProjetor" class="form-control"></select>
+                        </div>
+                        <hr>
+                        <div class="form-check">
+                            <label for="resetFailure" class="form-check-label">
+                                <input type="checkbox" id="resetFailure" class="form-check-input" value="">Redefinir status de falha
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-dark" data-dismiss="modal">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="footer">
+        <div class="container">
+            <span class="text-muted">Desenvolvido por Marlon Erich Ruttmann. FURB 2018.</span>
+        </div>
+    </footer>
+    <!-- Javascript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/javascripts/main.js"></script>
+    <script src="/javascripts/admin.js"></script>
 </body>
 </html>

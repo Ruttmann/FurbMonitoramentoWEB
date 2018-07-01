@@ -3,7 +3,7 @@ module.exports = function() {
     let mongoose = require('mongoose')
 
     let signals = mongoose.Schema({
-        deviceName: { type: String, default: 'Fill a device name' },
+        deviceName: { type: String, default: 'Preencha a marca/modelo do equipamento.' },
         description: String,
         signal: [String]
     })
