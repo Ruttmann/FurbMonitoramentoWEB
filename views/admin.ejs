@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>PDGE4</title>
+    <title>PDGE4 FURB - Painel de monitoramento</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="/stylesheets/admin.css">
-    
 </head>
 <body>
+
+    <!-- BARRA SUPERIOR DE NAVEGAÇÃO -->
     <header>
         <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
             <a class="navbar-brand pdge4" href="#">PDGE4</a>
@@ -32,6 +33,8 @@
         </nav>
     </header>
     <main role="main" class="container">
+
+        <!-- TELA DE INFORMAÇÕES -->
         <div class="infopanel">
             <h1 class="mt-5">Informações</h1>
             <p class="lead">Instruções de operação da página de monitoramento.</p>
@@ -47,6 +50,8 @@
             <h3 class="mt-5">Comandos:</h3>
             <p>Nesta área encontram-se os comandos disponíveis para atribuir a dispositivos. É possível editar o nome e a descrição do comando.</p>
         </div>
+
+        <!-- TELA DE DISPOSITIVOS IR -->
         <div class="devicespanel hiddenOnStartup" style="margin-top:15px">
             <h1 class="mt-5">Dispositivos</h1>
             <p class="lead">Lista dos dispositivos cadastrados no servidor. Clique na linha do dispositivo na tabela para editar seus atributos.</p>
@@ -71,6 +76,8 @@
                 </thead>
             </table>
         </div>
+
+        <!-- TELA DE COMANDOS -->
         <div class="commandspanel hiddenOnStartup">
             <h1 class="mt-5">Comandos</h1>
             <p class="lead">Repositório de comandos. Clique no card desejado para editar as informações.</p>
@@ -83,6 +90,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODAL DE EDIÇÃO DE COMANDOS -->
         <div class="modal fade" id="modalCommands">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -100,7 +109,6 @@
                         </div>
                         <div class="form-group">
                             <label for="description">Descrição:</label>
-                            <!-- <input type="text" class="form-control" id="description"> -->
                             <textarea id="description" rows="3" class="form-control"></textarea>
                         </div>
                     </div>
@@ -110,6 +118,8 @@
                 </div>
             </div>
         </div>
+
+        <!-- MODAL DE EDIÇÃO DE DISPOSITIVOS IR -->
         <div class="modal fade" id="modalDevices">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -119,23 +129,23 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <input type="text" id="id" hidden>
+                            <input type="text" id="devId" hidden>
                         </div>
                         <div class="form-group">
-                            <label for="id">ID do Dispositivo:</label>
-                            <input type="text" class="form-control" id="id">
+                            <label for="clientId">ID do Dispositivo:</label>
+                            <input type="text" class="form-control" id="clientId">
                         </div>
                         <div class="form-group">
-                            <label for="description">Descrição:</label>
-                            <textarea id="description" rows="2" class="form-control"></textarea>
+                            <label for="descr">Descrição:</label>
+                            <textarea id="descr" rows="2" class="form-control"></textarea>
                         </div>
                         <div class="form-group">
                             <label for="commAr">Comando ar:</label>
                             <select id="commAr" class="form-control"></select>
                         </div>
                         <div class="form-group">
-                                <label for="commProjetor">Comando projetor:</label>
-                                <select id="commProjetor" class="form-control"></select>
+                            <label for="commProjetor">Comando projetor:</label>
+                            <select id="commProjetor" class="form-control"></select>
                         </div>
                         <hr>
                         <div class="form-check">
@@ -151,12 +161,15 @@
             </div>
         </div>
     </main>
+
+    <!-- RODAPÉ DA PÁGINA -->
     <footer class="footer">
         <div class="container">
             <span class="text-muted">Desenvolvido por Marlon Erich Ruttmann. FURB 2018.</span>
         </div>
     </footer>
-    <!-- Javascript -->
+
+    <!-- JAVASCRIPTS -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>

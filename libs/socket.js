@@ -71,9 +71,9 @@ module.exports = function(io) {
                     });
 
                     if (!sig1)
-                        element.signalKeys[0] = '[vazio]'
+                        element.signalKeys[0] = ''
                     if (!sig2)
-                        element.signalKeys[1] = '[vazio]'
+                        element.signalKeys[1] = ''
                 });
                 resolve(true)
             })

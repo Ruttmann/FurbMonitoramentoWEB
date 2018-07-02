@@ -6,7 +6,6 @@ module.exports = function() {
         clientID: String,
         description: { type: String, default: 'Preencha uma descrição.' },
         signalKeys: [String],
-        //isOnline: { type: Boolean, default: true },
         hasFailure: { type: String, default: 'Não' }
     })
 
