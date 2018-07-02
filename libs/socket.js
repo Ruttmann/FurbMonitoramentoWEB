@@ -77,7 +77,6 @@ module.exports = function(io) {
                 });
                 resolve(true)
             })
-
         }
 
         function sendClientDevices() {
@@ -88,7 +87,6 @@ module.exports = function(io) {
 
         async function updateSignalsList() {
             signalsList = await getAllSignals()
-
             sendClientSignals()
         }
 
