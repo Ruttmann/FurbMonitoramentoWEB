@@ -103,7 +103,13 @@
                     `<tr data-toggle="modal" data-target="#modalDevices" data-id=${element._id}>
                         <th class="devId">${element.clientID}</th>
                         <th class="description">${element.description}</th>
-                        <th class="commands"><span class="command1">${element.signalKeys[0]}</span><br><span class="command2">${element.signalKeys[1]}</span></th>
+                        <th class="commands">
+                            <span class="command1key" hidden>${element.signalKeys[0]}</span>
+                            <span class="command1name">${element.signalKeys[2]}</span>
+                            <br>
+                            <span class="command2key" hidden>${element.signalKeys[1]}</span>
+                            <span class="command2name">${element.signalKeys[3]}</span>
+                        </th>
                         <th><span class="badge badge-pill badge-success">Online</span></th>
                         <th><span class="badge badge-pill badge-${badgeFailure}">${element.hasFailure}</span></th>
                     </tr>`
@@ -126,7 +132,13 @@
                     `<tr data-toggle="modal" data-target="#modalDevices" data-id=${element._id}>
                         <th class="devId">${element.clientID}</th>
                         <th class="description">${element.description}</th>
-                        <th class="commands"><span class="command1">${element.signalKeys[0]}</span><br><span class="command2">${element.signalKeys[1]}</span></th>
+                        <th class="commands">
+                            <span class="command1key" hidden>${element.signalKeys[0]}</span>
+                            <span class="command1name">${element.signalKeys[2]}</span>
+                            <br>
+                            <span class="command2key"hidden>${element.signalKeys[1]}</span>
+                            <span class="command2name">${element.signalKeys[3]}</span>
+                        </th>
                         <th><span class="badge badge-pill badge-danger">Offline</span></th>
                         <th><span class="badge badge-pill badge-${badgeFailure}">${element.hasFailure}</span></th>
                     </tr>`
