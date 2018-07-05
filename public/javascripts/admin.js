@@ -1,5 +1,6 @@
 (function() {
     let socket = io('/arduino')
+    let signalsList
 
     $(document).ready(function() {
         $(".pdge4").click(function(event) {
@@ -27,6 +28,10 @@
             $(".devicespanel").hide()
         })
 
+        socket.emit('identify', { id: 'web'})
+
+        socket.emit('sendAllData')
+
         //DESABILITA BOTÃO SALVAR DO MODAL DE COMANDOS SE O NOME DO COMANDO ESTIVER VAZIO
         $('#nameCommand').keyup(function(){
             $('#saveCommand').prop('disabled', this.value == "" ? true : false);     
@@ -49,24 +54,22 @@
 
         })
 
-
         $('#saveDevice').click(function(event) {
             let modal = $('#modalDevices')
             let deviceId = modal.find('#devId').val()
             let deviceClientId = modal.find('#clientId').val()
             let deviceDescr = modal.find('#descr').val()
+            //FALTA AQUI: commAr e commProjetor
+            let deviceResetFail = modal.find('#resetFailure').prop('checked')
             
         })
 
-        socket.emit('identify', { id: 'web'})
-
-        socket.emit('sendAllData')
-
-        //Atualiza div .commandspanel
+        //Atualiza div .commandspanel e a lista de sinais
         socket.on('updateSignals', (data) => {
             let commandsDiv = '#commandsCards'
             $(commandsDiv).empty()
             
+            //ATUALIZA A DIV
             data.signals.forEach(element => {
                 $(commandsDiv).append(
                     `<div class="card bg-dark" data-toggle="modal" data-target="#modalCommands" data-id=${element._id}>
@@ -77,6 +80,9 @@
                     </div>`
                 )
             })
+
+            //ATUALIZA A LISTA DE SINAIS
+            signalsList = data.signals
         })
 
         function fillCommandsModal(event, $modal) {
@@ -95,14 +101,43 @@
             let deviceId = row.data('id')
             let clientId = row.find('.devId').text()
             let description = row.find('.description').text()
-            let command1 = row.find('.command1').text()
-            let command2 = row.find('.command2').text()
+            let command1key = row.find('.command1key').text()
+            let command1name = row.find('.command1name').text()
+            let command2key = row.find('.command2key').text()
+            let command2name = row.find('.command2name').text()
 
             $modal.find('#devId').val(deviceId)
             $modal.find('#clientId').val(clientId)
             $modal.find('#descr').val(description)
-            $modal.find('#commAr').val(command1)
-            $modal.find('#commProjetor').val(command2)
+
+            //ESVAZIA E ADICIONA A PRIMEIRA OPÇÃO NA DROPDOWN COMANDO AR
+            $modal.find('#commAr').empty()
+            $modal.find('#commAr').append($('<option />')
+                .val(command1key).text(command1name))
+            
+            //ESVAZIA E ADICIONA A PRIMEIRA OPÇÃO NA DROPDOWN COMANDO PROJETOR
+            $modal.find('#commProjetor').empty()
+            $modal.find('#commProjetor').append($('<option />')
+                .val(command2key).text(command2name))
+
+            let dropdownProjetor = $modal.find('#commProjetor')
+            let dropdownAr = $modal.find('#commAr')
+
+            //PREENCHE OS ITENS RESTANTES NA DROPDOWN DE COMANDO AR
+            signalsList.forEach(signal => {
+                if (signal._id != command1key) {
+                    $modal.find('#commAr').append($('<option />')
+                        .val(signal._id).text(signal.deviceName))
+                }
+            })
+
+            //PREENCHE OS ITENS RESTANTES NA DROPDOWN DE COMANDO PROJETOR
+            signalsList.forEach(signal => {
+                if (signal._id != command2key) {
+                    $modal.find('#commProjetor').append($('<option />')
+                        .val(signal._id).text(signal.deviceName))
+                }
+            })
         }
 
         $('#modalCommands').on('show.bs.modal', event => {

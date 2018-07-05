@@ -66,11 +66,9 @@ module.exports = function(io) {
                     signalsList.forEach(signal => {
                         if (signal._id == sig1) {
                             element.signalKeys[2] = signal.deviceName
-                            // element.name1 = signal.deviceName
                         }
                         if (signal._id == sig2) {
                             element.signalKeys[3] = signal.deviceName
-                            // element.name2 = signal.deviceName    
                         }
                     });
 
