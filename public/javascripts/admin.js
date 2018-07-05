@@ -27,6 +27,37 @@
             $(".devicespanel").hide()
         })
 
+        //DESABILITA BOTÃO SALVAR DO MODAL DE COMANDOS SE O NOME DO COMANDO ESTIVER VAZIO
+        $('#nameCommand').keyup(function(){
+            $('#saveCommand').prop('disabled', this.value == "" ? true : false);     
+        })
+
+        //DESABILITA BOTÃO SALVAR DO MODAL DE DISPOSITIVOS SE O NOME DO COMANDO ESTIVER VAZIO
+        $('#clientId').keyup(function(){
+            $('#saveDevice').prop('disabled', this.value == "" ? true : false);     
+        })
+
+        $('#saveCommand').click(function(event) {
+            let modal = $('#modalCommands')
+            let commandId = modal.find('#idCommand').val()
+            let commandName = modal.find('#nameCommand').val()
+            let commandDescr = modal.find('#descriptionCommand').val()
+
+            let commandObj = { id: commandId, name: commandName, description: commandDescr }
+
+            socket.emit('saveSignal', commandObj)
+
+        })
+
+
+        $('#saveDevice').click(function(event) {
+            let modal = $('#modalDevices')
+            let deviceId = modal.find('#devId').val()
+            let deviceClientId = modal.find('#clientId').val()
+            let deviceDescr = modal.find('#descr').val()
+            
+        })
+
         socket.emit('identify', { id: 'web'})
 
         socket.emit('sendAllData')
@@ -54,9 +85,9 @@
             let commandName = card.find('.deviceName').text()
             let commandDescr = card.find('.deviceDescription').text()
 
-            $modal.find('#id').val(commandId)
-            $modal.find('#name').val(commandName)
-            $modal.find('#description').val(commandDescr)
+            $modal.find('#idCommand').val(commandId)
+            $modal.find('#nameCommand').val(commandName)
+            $modal.find('#descriptionCommand').val(commandDescr)
         }
 
         function fillDevicesModal(event, $modal) {

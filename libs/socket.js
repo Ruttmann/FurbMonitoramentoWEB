@@ -134,9 +134,46 @@ module.exports = function(io) {
             })
         }
 
+        async function saveSignal(signalObj) {
+            await saveSignalPromise(signalObj)
+            updateSignalsList()
+            updateDevicesStatus()
+        }
+
+        function saveSignalPromise(signalObj) {
+            return new Promise((resolve,reject) => {
+                Signal.update({ _id: signalObj.id }, { deviceName: signalObj.name, description: signalObj.description }, err => {
+                    if (err) console.error(err)
+                    resolve(true)
+                })
+            })
+        }
+
+        function saveDevicePromise(deviceObj) {
+            return new Promise((resolve,reject) => {
+                Arduino.update({ _id: deviceObj.id }, {}, err => {
+                    if (err) console.error(err)
+                    resolve(true)
+                })
+            })
+        }
+
+        async function saveDevice(deviceObj) {
+            await saveDevicePromise(deviceObj)
+            updateDevicesStatus()
+        }
+
         socket.on('sendAllData', () => {
             updateDevicesStatus()
             updateSignalsList()
+        })
+
+        socket.on('saveSignal', data => {
+            saveSignal(data)
+        })
+
+        socket.on('saveDevice', data => {
+            saveDevice(data)
         })
 
         socket.on('identify', data => {

@@ -101,19 +101,19 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
-                            <input type="text" id="id" hidden>
+                            <input type="text" id="idCommand" hidden>
                         </div>
                         <div class="form-group">
                             <label for="name">Nome/modelo do equipamento:</label>
-                            <input type="text" class="form-control" id="name">
+                            <input type="text" class="form-control" id="nameCommand" required>
                         </div>
                         <div class="form-group">
                             <label for="description">Descrição:</label>
-                            <textarea id="description" rows="3" class="form-control"></textarea>
+                            <textarea id="descriptionCommand" rows="3" class="form-control"></textarea>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-dark" data-dismiss="modal">Salvar</button>
+                        <button class="btn btn-dark" id="saveCommand" data-dismiss="modal">Salvar</button>
                     </div>
                 </div>
             </div>
@@ -155,7 +155,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-dark" data-dismiss="modal">Salvar</button>
+                        <button class="btn btn-dark" id="saveDevice" data-dismiss="modal">Salvar</button>
                     </div>
                 </div>
             </div>
