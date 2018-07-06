@@ -293,6 +293,7 @@ module.exports = function(io) {
                             if (err) return console.error(err)
                             arduinoBanco = record
                         })
+                        console.log(arduinoBanco)
 
                         //Busca comando 1 do dispositivo
                         let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
