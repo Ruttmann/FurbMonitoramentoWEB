@@ -343,31 +343,6 @@ module.exports = function(io) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         updateDevicesAndSignals()
-                        //Atualiza objeto de banco do dispositivo
-                        // let queryArduino = Arduino.where({ clientID: socket.clientID })
-                        // queryArduino.findOne(function(err, record) {
-                        //     if (err) return console.error(err)
-                        //     arduinoBanco = record
-                        // })
-                        // console.log(arduinoBanco)
-
-                        //Busca comando 1 do dispositivo
-                        // let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
-                        // querySignal1.findOne(function(err, record) {
-                        //     if (err) return console.error(err)
-                        //     if (record) {
-                        //         comando1 = record.signal
-                        //     }
-                        // })
-
-                        //Busca comando 2 do dispositivo
-                        // let querySignal2 = Signal.where({ _id: arduinoBanco.signalKeys[1] })
-                        // querySignal2.findOne(function(err, record) {
-                        //     if (err) return console.error(err)
-                        //     if (record) {
-                        //         comando2 = record.signal
-                        //     }
-                        // })
                     } else {
                         socket.emit('monitoring', { msg: 'nok' })
                     }
