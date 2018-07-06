@@ -51,7 +51,6 @@
             let commandObj = { id: commandId, name: commandName, description: commandDescr }
 
             socket.emit('saveSignal', commandObj)
-
         })
 
         $('#saveDevice').click(function(event) {
@@ -59,9 +58,14 @@
             let deviceId = modal.find('#devId').val()
             let deviceClientId = modal.find('#clientId').val()
             let deviceDescr = modal.find('#descr').val()
-            //FALTA AQUI: commAr e commProjetor
+            let commandsKeys = []
+            commandsKeys[0] = modal.find('#commAr :selected').val()
+            commandsKeys[1] = modal.find('#commProjetor :selected').val()
             let deviceResetFail = modal.find('#resetFailure').prop('checked')
-            
+
+            let deviceObj = { id: deviceId, clientID: deviceClientId, description: deviceDescr, signalKeys: commandsKeys, resetFailure: deviceResetFail }
+
+            socket.emit('saveDevice', deviceObj)
         })
 
         //Atualiza div .commandspanel e a lista de sinais
@@ -120,8 +124,7 @@
             $modal.find('#commProjetor').append($('<option />')
                 .val(command2key).text(command2name))
 
-            let dropdownProjetor = $modal.find('#commProjetor')
-            let dropdownAr = $modal.find('#commAr')
+            $modal.find('#resetFailure').prop('checked', false)
 
             //PREENCHE OS ITENS RESTANTES NA DROPDOWN DE COMANDO AR
             signalsList.forEach(signal => {

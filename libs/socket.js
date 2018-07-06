@@ -84,6 +84,7 @@ module.exports = function(io) {
         function sendClientDevices() {
             adminsWeb.forEach((currentClient) => {
                 arduinoNM.connected[currentClient].emit('updateDevices', { online: devicesOnline, offline: devicesOffline })
+                console.log('[LOG] Lista de clientes enviada ao cliente web.')
             })
         }
 
@@ -95,6 +96,7 @@ module.exports = function(io) {
         function sendClientSignals() {
             adminsWeb.forEach((currentClient) => {
                 arduinoNM.connected[currentClient].emit('updateSignals', { signals: signalsList })
+                console.log('[LOG] Lista de comandos enviada ao cliente web.')
             })
         }
 
@@ -149,7 +151,13 @@ module.exports = function(io) {
 
         function saveDevicePromise(deviceObj) {
             return new Promise((resolve,reject) => {
-                Arduino.update({ _id: deviceObj.id }, {}, err => {
+                let obj
+                if (deviceObj.resetFailure)
+                    obj  = { clientID: deviceObj.clientID, description: deviceObj.description, signalKeys: deviceObj.signalKeys, hasFailure: 'Não' }
+                else
+                    obj  = { clientID: deviceObj.clientID, description: deviceObj.description, signalKeys: deviceObj.signalKeys }
+
+                Arduino.update({ _id: deviceObj.id }, obj, err => {
                     if (err) console.error(err)
                     resolve(true)
                 })
