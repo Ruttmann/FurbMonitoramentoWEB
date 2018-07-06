@@ -182,6 +182,7 @@ module.exports = function(io) {
 
         async function updateLocalDevice() {
             await updateLocalDevicePromise()
+            console.log(arduinoBanco)
         }
 
         function updateLocalDevicePromise() {
