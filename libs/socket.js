@@ -36,7 +36,7 @@ module.exports = function(io) {
         let isNewDevice = false
         let isFirstSignal = true
 
-        //Funções do painel de monitoramento
+        //Preenche as listas de dispositivos online e offline
         async function updateDevicesStatus() {
             //Zera as duas listas
             devicesOnline.splice(0,devicesOnline.length)
@@ -57,6 +57,7 @@ module.exports = function(io) {
             sendClientDevices()
         }
 
+        //Adiciona os nomes dos comandos atribuídos ao dispositivo
         function updateDevicesSignalsNames() {
             return new Promise((resolve,reject) => {
                 devicesDB.forEach(element => {
@@ -81,6 +82,7 @@ module.exports = function(io) {
             })
         }
 
+        //Envia ao cliente web as listas de dispositivos online e offline
         function sendClientDevices() {
             adminsWeb.forEach((currentClient) => {
                 arduinoNM.connected[currentClient].emit('updateDevices', { online: devicesOnline, offline: devicesOffline })
@@ -88,11 +90,13 @@ module.exports = function(io) {
             })
         }
 
+        //Atualiza a lista de comandos
         async function updateSignalsList() {
             signalsList = await getAllSignals()
             sendClientSignals()
         }
 
+        //Envia ao cliente web a lista de comandos
         function sendClientSignals() {
             adminsWeb.forEach((currentClient) => {
                 arduinoNM.connected[currentClient].emit('updateSignals', { signals: signalsList })
@@ -100,6 +104,7 @@ module.exports = function(io) {
             })
         }
 
+        //Busca todos os clientes conectados
         function getAllConnectedClients() {
             return new Promise((resolve,reject) => {
                 arduinoNM.clients((err, results) => {
@@ -114,6 +119,7 @@ module.exports = function(io) {
             })
         }
 
+        //Busca todos os dispositivos no banco de dados
         function getAllDevices() {
             return new Promise((resolve, reject) => {
                 let query = Arduino.where({})
@@ -124,6 +130,7 @@ module.exports = function(io) {
             })
         }
         
+        //Busca todos os comandos no banco de dados
         function getAllSignals() {
             return new Promise((resolve,reject) => {
                 let query = Signal.where({})
@@ -134,12 +141,14 @@ module.exports = function(io) {
             })
         }
 
+        //Salva alterações em comandos feitas no cliente web
         async function saveSignal(signalObj) {
             await saveSignalPromise(signalObj)
             updateSignalsList()
             updateDevicesStatus()
         }
 
+        //Adiciona em banco as alterações de comandos feitas no cliente web
         function saveSignalPromise(signalObj) {
             return new Promise((resolve,reject) => {
                 Signal.update({ _id: signalObj.id }, { deviceName: signalObj.name, description: signalObj.description }, err => {
@@ -149,10 +158,17 @@ module.exports = function(io) {
             })
         }
 
+        //Salva alterações em dispositivos feitas no cliente web
+        async function saveDevice(deviceObj) {
+            await saveDevicePromise(deviceObj)
+            updateDevicesStatus()
+        }
+
+        //Adiciona em banco as alterações de dispositivos feitas no cliente web
         function saveDevicePromise(deviceObj) {
             return new Promise((resolve,reject) => {
                 let obj
-                if (deviceObj.resetFailure)
+                if (deviceObj.resetFailure) //Se vai resetar o status de falha do dispositivo...
                     obj  = { clientID: deviceObj.clientID, description: deviceObj.description, signalKeys: deviceObj.signalKeys, hasFailure: 'Não' }
                 else
                     obj  = { clientID: deviceObj.clientID, description: deviceObj.description, signalKeys: deviceObj.signalKeys }
@@ -164,24 +180,23 @@ module.exports = function(io) {
             })
         }
 
-        async function saveDevice(deviceObj) {
-            await saveDevicePromise(deviceObj)
-            updateDevicesStatus()
-        }
-
+        //Envia listas de dispositivos online e offline, e lista de comandos ao cliente web
         socket.on('sendAllData', () => {
             updateDevicesStatus()
             updateSignalsList()
         })
 
+        //Salva comandos alterados no cliente web
         socket.on('saveSignal', data => {
             saveSignal(data)
         })
 
+        //Salva dispositivos alterados no cliente web
         socket.on('saveDevice', data => {
             saveDevice(data)
         })
 
+        //Evento de identificação dos clientes que se conectam ao servidor
         socket.on('identify', data => {
             socket.clientID = data.id
 
@@ -205,6 +220,7 @@ module.exports = function(io) {
             }
         })
 
+        //Evento de recepção de comandos enviados por um Dispositivo IR
         socket.on('sigSend', data => {
             switch (data.msg) {
                 case 'start':
@@ -228,6 +244,7 @@ module.exports = function(io) {
             }
         })
 
+        //Evento que salva cada segmento de comando enviado pelo Dispositivo IR
         socket.on('arrayPart', data => {
             signalBanco.signal.push(data)
             //Debug purposes
@@ -237,16 +254,19 @@ module.exports = function(io) {
             //Debug purposes
         })
 
+        //Evento de fim de boot de um Dispositivo IR
         socket.on('endBoot', data => {
             switch (data.msg) {
                 case 'start':
                     arduinoBanco.save((err, arduinoBanco) => {
                         if (err) return console.error(err)
                         console.log(`[ARD] Atributos do cliente '${socket.clientID}' persistidos.`)
+                        //Quando um dispositivo termina o boot, atualiza a lista de dispositivos no cliente web
                         updateDevicesStatus()
                     })
                     break;
                 case 'restart':
+                    //Quando um Dispositivo IR sai do modo stand-by, atualiza a lista de dispositivos no cliente web
                     updateDevicesStatus()
                     break;
             }
@@ -255,6 +275,7 @@ module.exports = function(io) {
         let comando1 = null
         let comando2 = null
 
+        //Evento de desligamento, quando o Dispositivo IR detecta que a sala está vazia
         socket.on('monitoring', data => {
             switch (data.msg) {
                 case 'emptyRoom':
@@ -262,8 +283,8 @@ module.exports = function(io) {
                     let startOff = process.env.START_OFF_TIME
                     let endOff = process.env.END_OFF_TIME
                     console.log(`[INF] Autorizado a desligar entre ${startOff} e ${endOff} horas.`)
-                    // if (currentTime >= startOff || currentTime <= endOff) {
-                    if (currentTime >= 22 || currentTime <= 7) {
+                    if (currentTime >= startOff || currentTime <= endOff) {
+                    // if (currentTime >= 22 || currentTime <= 7) {
                         socket.emit('monitoring', { msg: 'ok' })
 
                         //Atualiza objeto de banco do dispositivo
@@ -315,6 +336,7 @@ module.exports = function(io) {
             }
         })
 
+        //Evento de reporte de falha no desligamento de algum equipamento da sala
         socket.on('failure', data => {
             let failure = data.id
             Arduino.update({ _id: arduinoBanco._id }, { hasFailure: failure }, err => {
@@ -323,16 +345,19 @@ module.exports = function(io) {
             })
         })
 
+        //Evento de keepAlive do Dispositivo IR, para que não acontece timeout de conexão
         socket.on('keepAlive', data => {
             let id = data.msg
             console.log(`[KEP] Keepalive do cliente '${id}'.`)
         })
 
+        //Evento de desconexão dos clientes.
         socket.on('disconnect', data => {
-            if (socket.clientID != 'web' && socket.clientID != undefined) {
+            if (socket.clientID != 'web' && socket.clientID != undefined) { //Se é um Dispositivo IR...
                 console.log(`[DSC] Cliente '${socket.clientID}' se desconectou.`)
+                //Quando um dispositivo se desconecta, atualiza a lista de dispositivos no cliente web
                 updateDevicesStatus()
-            } else {
+            } else { //Se é um cliente web
                 let index = adminsWeb.indexOf(socket.id)
                 if (index != -1) adminsWeb.splice(index, 1)
                 console.log('[WEB] Cliente web se desconectou.')

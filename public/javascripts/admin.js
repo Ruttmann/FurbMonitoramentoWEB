@@ -1,26 +1,29 @@
 (function() {
+    //Websocket com servidor
     let socket = io('/arduino')
+    //Lista de comandos
     let signalsList
 
     $(document).ready(function() {
+        //Desabilita primeiro link da NAVBAR
         $(".pdge4").click(function(event) {
             event.preventDefault()
         }) 
-    
+        //Abre página de informações
         $("#infolink").click(function(event) {
             event.preventDefault()
             $(".infopanel").show()
             $(".devicespanel").hide()
             $(".commandspanel").hide()
         })
-    
+        //Abre página de dispositivos
         $("#displink").click(function(event) {
             event.preventDefault()
             $(".devicespanel").show()
             $(".infopanel").hide()
             $(".commandspanel").hide()
         })
-    
+        //Abre página de comandos
         $("#comalink").click(function(event) {
             event.preventDefault()
             $(".commandspanel").show()
@@ -28,20 +31,23 @@
             $(".devicespanel").hide()
         })
 
+        //Se identifica no servidor
         socket.emit('identify', { id: 'web'})
 
+        //Solicita todos os dados para preencher as páginas
         socket.emit('sendAllData')
 
-        //DESABILITA BOTÃO SALVAR DO MODAL DE COMANDOS SE O NOME DO COMANDO ESTIVER VAZIO
+        //Desabilita botão salvar do modal de comandos se o nome do comando estiver vazio
         $('#nameCommand').keyup(function(){
             $('#saveCommand').prop('disabled', this.value == "" ? true : false);     
         })
 
-        //DESABILITA BOTÃO SALVAR DO MODAL DE DISPOSITIVOS SE O NOME DO COMANDO ESTIVER VAZIO
+        //Desabilita botão salvar do modal de dispositivos se o ID do dispositivo estiver vazio
         $('#clientId').keyup(function(){
             $('#saveDevice').prop('disabled', this.value == "" ? true : false);     
         })
 
+        //Salva os valores do modal de comandos
         $('#saveCommand').click(function(event) {
             let modal = $('#modalCommands')
             let commandId = modal.find('#idCommand').val()
@@ -53,6 +59,7 @@
             socket.emit('saveSignal', commandObj)
         })
 
+        //Salva os valores do modal de dispositivos
         $('#saveDevice').click(function(event) {
             let modal = $('#modalDevices')
             let deviceId = modal.find('#devId').val()
@@ -89,6 +96,7 @@
             signalsList = data.signals
         })
 
+        //Preenche a modal de comandos
         function fillCommandsModal(event, $modal) {
             let card = $(event.relatedTarget)
             let commandId = card.data('id')
@@ -100,6 +108,7 @@
             $modal.find('#descriptionCommand').val(commandDescr)
         }
 
+        //Preenche a modal de dispositivos
         function fillDevicesModal(event, $modal) {
             let row = $(event.relatedTarget)
             let deviceId = row.data('id')
@@ -143,15 +152,17 @@
             })
         }
 
+        //Evento de abertura da modal de comandos, chama a função que preenche a modal de comandos
         $('#modalCommands').on('show.bs.modal', event => {
             fillCommandsModal(event, $(this))
         })
 
+        //Evento de abertura da modal de dispositivos, chama a função que preenche a modal de dispositivos
         $('#modalDevices').on('show.bs.modal', event => {
             fillDevicesModal(event, $(this))
         })
         
-        //Atualiza div .devicespanel
+        //Atualiza a página de dispositivos
         socket.on('updateDevices', (data) => {
             let devicesDiv = '#bodyDevices'
             $(devicesDiv).empty()
@@ -167,7 +178,7 @@
                         badgeFailure = 'warning'
                         break
                 }
-
+                
                 $(devicesDiv).append(
                     `<tr data-toggle="modal" data-target="#modalDevices" data-id=${element._id}>
                         <th class="devId">${element.clientID}</th>
