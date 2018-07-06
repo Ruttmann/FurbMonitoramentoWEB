@@ -36,6 +36,9 @@ module.exports = function(io) {
         let isNewDevice = false
         let isFirstSignal = true
 
+        let comando1 = null
+        let comando2 = null
+
         //Preenche as listas de dispositivos online e offline
         async function updateDevicesStatus() {
             //Zera as duas listas
@@ -182,7 +185,6 @@ module.exports = function(io) {
 
         async function updateLocalDevice() {
             await updateLocalDevicePromise()
-            console.log(arduinoBanco)
         }
 
         function updateLocalDevicePromise() {
@@ -193,6 +195,40 @@ module.exports = function(io) {
                     arduinoBanco = record
                     resolve(true)
                 })
+            })
+        }
+
+        async function updateCommand1() {
+            await updateCommand1Promise()
+        }
+
+        function updateCommand1Promise() {
+            return new Promise((resolve,reject) => {
+                let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
+                    querySignal1.findOne(function(err, record) {
+                        if (err) return console.error(err)
+                        if (record) {
+                            comando1 = record.signal
+                        }
+                        resolve(true)
+                    })
+            })
+        }
+
+        async function updateCommand2() {
+            await updateCommand2Promise()
+        }
+
+        function updateCommand2Promise() {
+            return new Promise((resolve,reject) => {
+                let querySignal2 = Signal.where({ _id: arduinoBanco.signalKeys[1] })
+                    querySignal2.findOne(function(err, record) {
+                        if (err) return console.error(err)
+                        if (record) {
+                            comando2 = record.signal
+                        }
+                        resolve(true)
+                    })
             })
         }
 
@@ -288,9 +324,6 @@ module.exports = function(io) {
             }
         })
 
-        let comando1 = null
-        let comando2 = null
-
         //Evento de desligamento, quando o Dispositivo IR detecta que a sala está vazia
         socket.on('monitoring', data => {
             switch (data.msg) {
@@ -312,23 +345,25 @@ module.exports = function(io) {
                         // })
                         // console.log(arduinoBanco)
 
+                        updateCommand1()
                         //Busca comando 1 do dispositivo
-                        let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
-                        querySignal1.findOne(function(err, record) {
-                            if (err) return console.error(err)
-                            if (record) {
-                                comando1 = record.signal
-                            }
-                        })
+                        // let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
+                        // querySignal1.findOne(function(err, record) {
+                        //     if (err) return console.error(err)
+                        //     if (record) {
+                        //         comando1 = record.signal
+                        //     }
+                        // })
 
+                        updateCommand2()
                         //Busca comando 2 do dispositivo
-                        let querySignal2 = Signal.where({ _id: arduinoBanco.signalKeys[1] })
-                        querySignal2.findOne(function(err, record) {
-                            if (err) return console.error(err)
-                            if (record) {
-                                comando2 = record.signal
-                            }
-                        })
+                        // let querySignal2 = Signal.where({ _id: arduinoBanco.signalKeys[1] })
+                        // querySignal2.findOne(function(err, record) {
+                        //     if (err) return console.error(err)
+                        //     if (record) {
+                        //         comando2 = record.signal
+                        //     }
+                        // })
                     } else {
                         socket.emit('monitoring', { msg: 'nok' })
                     }
