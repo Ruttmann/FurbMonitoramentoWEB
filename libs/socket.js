@@ -180,6 +180,21 @@ module.exports = function(io) {
             })
         }
 
+        async function updateLocalDevice() {
+            await updateLocalDevicePromise()
+        }
+
+        function updateLocalDevicePromise() {
+            return new Promise((resolve,reject) => {
+                let queryArduino = Arduino.where({ clientID: socket.clientID })
+                queryArduino.findOne(function(err, record) {
+                    if (err) return console.error(err)
+                    arduinoBanco = record
+                    resolve(true)
+                })
+            })
+        }
+
         //Envia listas de dispositivos online e offline, e lista de comandos ao cliente web
         socket.on('sendAllData', () => {
             updateDevicesStatus()
@@ -287,13 +302,14 @@ module.exports = function(io) {
                     // if (currentTime >= 22 || currentTime <= 7) {
                         socket.emit('monitoring', { msg: 'ok' })
 
+                        updateLocalDevice()
                         //Atualiza objeto de banco do dispositivo
-                        let queryArduino = Arduino.where({ clientID: socket.clientID })
-                        queryArduino.findOne(function(err, record) {
-                            if (err) return console.error(err)
-                            arduinoBanco = record
-                        })
-                        console.log(arduinoBanco)
+                        // let queryArduino = Arduino.where({ clientID: socket.clientID })
+                        // queryArduino.findOne(function(err, record) {
+                        //     if (err) return console.error(err)
+                        //     arduinoBanco = record
+                        // })
+                        // console.log(arduinoBanco)
 
                         //Busca comando 1 do dispositivo
                         let querySignal1 = Signal.where({ _id: arduinoBanco.signalKeys[0] })
